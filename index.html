@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Valentine</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: "Times New Roman", serif;
+    text-align: center;
+    background-color: #fde8ef;
+    overflow: hidden;
+}
+
+/* ir background */
+.ir-layer {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+}
+.ir {
+    position: absolute;
+    font-size: 48px;
+    color: rgba(90,140,255,0.28);
+    transform: rotate(-20deg);
+}
+
+/* common */
+h1 {
+    margin-top: 60px;
+    font-size: 38px;
+    color: #4a2c3a;
+}
+img {
+    width: 260px;
+    margin: 25px 0;
+}
+button {
+    font-family: "Times New Roman", serif;
+    font-size: 20px;
+    padding: 14px 36px;
+    margin: 12px;
+    border-radius: 30px;
+    border: none;
+    cursor: pointer;
+}
+
+#yesBtn { background:#ff6fa5; color:white; }
+#noBtn  { background:#9bb7f0; color:white; }
+
+/* screens */
+#prankScreen, #successScreen {
+    display: none;
+    height: 100vh;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+/* prank */
+.gif-wrapper { position: relative; }
+
+#jkText {
+    position: absolute;
+    inset: 0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:42px;
+    font-weight:bold;
+    color:#ff2f7a;
+    transform:rotate(-8deg) scale(0.3);
+    opacity:0;
+}
+.show-jk {
+    animation: pop 0.6s forwards, shake 0.5s infinite;
+}
+@keyframes pop {
+    0% { opacity:0; transform:rotate(-8deg) scale(0.3); }
+    70% { opacity:1; transform:rotate(-8deg) scale(1.2); }
+    100% { opacity:1; transform:rotate(-8deg) scale(1); }
+}
+@keyframes shake {
+    0%,100% { transform:rotate(-8deg) translateX(0); }
+    25% { transform:rotate(-8deg) translateX(-4px); }
+    50% { transform:rotate(-8deg) translateX(4px); }
+    75% { transform:rotate(-8deg) translateX(-4px); }
+}
+
+/* MOBILE R BUTTON (now primary) */
+#mobileR {
+    background:#ff2f7a;
+    color:white;
+    font-size:22px;
+    padding:16px 48px;
+    border-radius:40px;
+    margin-top:25px;
+    animation: bounce 1.5s infinite, glow 2s infinite;
+}
+@keyframes bounce {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+}
+@keyframes glow {
+    0% { box-shadow:0 0 0 rgba(255,47,122,0.4); }
+    50% { box-shadow:0 0 20px rgba(255,47,122,0.8); }
+    100% { box-shadow:0 0 0 rgba(255,47,122,0.4); }
+}
+
+/* final */
+#successScreen p {
+    font-size:21px;
+    max-width:620px;
+    margin:25px auto;
+    color:#4a2c3a;
+}
+
+/* confetti */
+#confettiCanvas {
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:999;
+}
+
+/* orientation notice */
+#rotateNotice {
+    display:none;
+    position:fixed;
+    inset:0;
+    background:#fde8ef;
+    z-index:2000;
+    align-items:center;
+    justify-content:center;
+    font-size:26px;
+    color:#4a2c3a;
+}
+</style>
+</head>
+
+<body>
+
+<div id="rotateNotice">Rotate your phone ❤️</div>
+
+<div class="ir-layer" id="irLayer"></div>
+<canvas id="confettiCanvas"></canvas>
+
+<!-- MAIN -->
+<div id="mainScreen">
+    <h1>RiRi Will You Be My Valentine?</h1>
+    <img src="https://media.giphy.com/media/Gut8LeP5yefbSdpIOr/giphy.gif">
+    <div>
+        <button id="yesBtn">Yes</button>
+        <button id="noBtn">No</button>
+    </div>
+</div>
+
+<!-- PRANK -->
+<div id="prankScreen">
+    <div class="gif-wrapper">
+        <img src="https://media.giphy.com/media/VDYQFRVEYiUEInz7eX/giphy.gif">
+        <div id="jkText">I'M JUST KIDDING</div>
+    </div>
+    <button id="mobileR">Tap R ❤️</button>
+</div>
+
+<!-- FINAL -->
+<div id="successScreen">
+    <img src="https://media.giphy.com/media/7gGwDB8iMLPuE/giphy.gif">
+    <p>
+        From the moment you came into my life, ordinary days started feeling lighter.
+        If love is choosing someone every day, then this is me choosing you — always. ❤️
+    </p>
+</div>
+
+<!-- sounds -->
+<audio id="jkSound" src="https://www.soundjay.com/buttons/sounds/button-3.mp3"></audio>
+<audio id="celebrateSound" src="https://cdn.pixabay.com/audio/2022/01/18/audio_9a8f0e8c9a.mp3"></audio>
+
+<script>
+/* ir letters */
+const irLayer=document.getElementById("irLayer");
+for(let i=0;i<30;i++){
+    const s=document.createElement("span");
+    s.className="ir";
+    s.innerText="ir";
+    s.style.top=Math.random()*100+"%";
+    s.style.left=Math.random()*100+"%";
+    irLayer.appendChild(s);
+}
+
+const yesBtn=document.getElementById("yesBtn");
+const noBtn=document.getElementById("noBtn");
+const prankScreen=document.getElementById("prankScreen");
+const jkText=document.getElementById("jkText");
+const mobileR=document.getElementById("mobileR");
+const jkSound=document.getElementById("jkSound");
+const celebrateSound=document.getElementById("celebrateSound");
+
+let yesSize=1, noSize=1;
+let canProceed=false;
+
+/* NO */
+noBtn.onclick=()=>{
+    noSize-=0.1; yesSize+=0.12;
+    if(noSize<=0.2) noBtn.style.display="none";
+    noBtn.style.transform=`scale(${noSize})`;
+    yesBtn.style.transform=`scale(${yesSize})`;
+};
+
+/* YES */
+yesBtn.onclick=()=>{
+    mainScreen.style.display="none";
+    prankScreen.style.display="flex";
+    setTimeout(()=>{
+        jkText.classList.add("show-jk");
+        jkSound.play();
+        canProceed=true;
+    },2000);
+};
+
+function goToFinal(){
+    if(!canProceed) return;
+    canProceed=false;
+
+    prankScreen.style.display="none";
+    successScreen.style.display="flex";
+
+    celebrateSound.currentTime=0;
+    celebrateSound.volume=0.7;
+    celebrateSound.play();
+
+    if(navigator.vibrate) navigator.vibrate([120,60,120]);
+    startConfetti();
+}
+
+/* keyboard support (hidden) */
+document.addEventListener("keyup",e=>{
+    if(e.key.toLowerCase()==="r") goToFinal();
+});
+
+/* mobile / button */
+mobileR.onclick=()=>goToFinal();
+
+/* orientation */
+const rotateNotice=document.getElementById("rotateNotice");
+function checkOrientation(){
+    rotateNotice.style.display =
+        innerWidth>innerHeight ? "flex" : "none";
+}
+window.addEventListener("resize",checkOrientation);
+checkOrientation();
+
+/* confetti */
+const canvas=document.getElementById("confettiCanvas");
+const ctx=canvas.getContext("2d");
+let confetti=[];
+function resize(){
+    canvas.width=innerWidth;
+    canvas.height=innerHeight;
+}
+window.onresize=resize; resize();
+
+function startConfetti(){
+    confetti=[];
+    for(let i=0;i<150;i++){
+        confetti.push({
+            x:Math.random()*canvas.width,
+            y:Math.random()*canvas.height-canvas.height,
+            r:Math.random()*6+4,
+            d:Math.random()*5+2,
+            c:`hsl(${Math.random()*360},80%,60%)`
+        });
+    }
+    animate();
+    setTimeout(()=>confetti=[],6000);
+}
+function animate(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    confetti.forEach(p=>{
+        ctx.beginPath();
+        ctx.fillStyle=p.c;
+        ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+        ctx.fill();
+        p.y+=p.d;
+        if(p.y>canvas.height) p.y=-10;
+    });
+    if(confetti.length) requestAnimationFrame(animate);
+}
+</script>
+
+</body>
+</html>
